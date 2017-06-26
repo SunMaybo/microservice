@@ -3,11 +3,7 @@ package com.juxinli.config;
 import com.juxinli.common.Indicator;
 import com.juxinli.common.JsonObjectMapper;
 import com.juxinli.common.Message;
-import com.juxinli.rabbit.JRabbitListener;
-import com.juxinli.rabbit.BindingProperties;
-import com.juxinli.rabbit.JRabbitTemplate;
-import com.juxinli.rabbit.ReceiveMessageListener;
-import com.juxinli.rabbit.Binding;
+import com.juxinli.rabbit.*;
 import com.juxinli.spring.SpringBeanDefinitionRegistry;
 import com.juxinli.util.UUIDUtil;
 import com.rabbitmq.client.Channel;
@@ -82,17 +78,17 @@ public class AmqpConfig {
     }
 
     public void messageContainer(ConnectionFactory connectionFactory) {
-        List<Object> objectList = springBeanDefinitionRegistry.getBeansOfAnnotation(JRabbitListener.class);
+       final List<Object> objectList = springBeanDefinitionRegistry.getBeansOfAnnotation(JRabbitListener.class);
         for (int i = 0; i < objectList.size(); i++) {
             JRabbitListener jRabbitListener = objectList.get(i).getClass().getAnnotation(JRabbitListener.class);
             String[] queueNames = jRabbitListener.queues();
             if (jRabbitListener.isAutoCreateQueue()){//随机队列
               if (null!=queueNames){
-                  queueNames=Arrays.copyOf(queueNames,queueNames.length+1);
-                  queueNames[queueNames.length-1]=new String(JRabbitListener.RANDOM_CODE);
+                  queueNames= Arrays.copyOf(queueNames, queueNames.length + 1);
+                  queueNames[queueNames.length-1]=JRabbitListener.RANDOM_CODE;
               }else {
                   queueNames=new String[1];
-                  queueNames[0]=UUIDUtil.getOrderIdByUUId();
+                  queueNames[0]= UUIDUtil.getOrderIdByUUId();
               }
             }
             if (null != queueNames) {

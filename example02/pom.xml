@@ -21,7 +21,7 @@
 
     </dependencies>
     <build>
-        <finalName>@project.artifactId@_@project.version@</finalName>
+        <finalName>example02</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

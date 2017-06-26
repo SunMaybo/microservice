@@ -20,7 +20,7 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>@project.artifactId@_@project.version@</finalName>
+ <finalName>example</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
