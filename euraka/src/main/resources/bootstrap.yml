@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: eureka
+  profiles:
+    active: master
+server:
+  port: 8761
+eureka:
+  instance:
+    hostname: master
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${spring.application.profiles.active}:8761/eureka/

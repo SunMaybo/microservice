@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: example02
+  rabbitmq:
+    addresses: 192.168.100.233:5672
+    username: admin
+    password: mypass
+    virtualHost: /
+    binding:
+        exchanges:
+              - name: topic_exchange
+                schema:
+                  topics:
+                    - name: topic
+                      queues: queue
+server:
+   port: 8082
+   context-path: /service_02
+eureka:
+   client:
+      serviceUrl:
+         defaultZone: http://192.168.100.97:8761/eureka,http://192.168.100.97:8762/eureka
+   instance:
+      statusPageUrlPath: ${server.contextPath}/info
+      healthCheckUrlPath: ${server.contextPath}/health
+      preferIpAddress: true
+      metadataMap:
+          instanceId: ${spring.application.name}:${random.value}
