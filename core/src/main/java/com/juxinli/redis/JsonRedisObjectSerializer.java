@@ -19,8 +19,7 @@ public class JsonRedisObjectSerializer implements RedisSerializer<Object> {
             return null;
         }
         try {
-            JsonObjectMapper<Object>jsonObjectMapper=new JsonObjectMapper<>();
-            return jsonObjectMapper.writeValueAsString(o).getBytes("utf-8");
+            return JsonObjectMapper.writeValueAsString(o).getBytes("utf-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -36,8 +35,7 @@ public class JsonRedisObjectSerializer implements RedisSerializer<Object> {
                 return null;
             }
             String string =new String(bytes,"utf-8");
-            JsonObjectMapper<Object>jsonObjectMapper=new JsonObjectMapper<>();
-            return jsonObjectMapper.readerValueAsObject(new String(bytes,"utf-8"),Object.class);
+            return JsonObjectMapper.readerValueAsObject(new String(bytes,"utf-8"),Object.class);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

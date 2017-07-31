@@ -43,19 +43,16 @@ public class JRabbitTemplate {
         indicator.setType(Indicator.RABBIT_TEMPLATE);
         try {
             long start = new Date().getTime();
-            JsonObjectMapper<Message> jsonObjectMapper = new JsonObjectMapper<>();
-            amqpTemplate.convertAndSend(exchange, routeKey, jsonObjectMapper.writeValueAsString(message));
+            amqpTemplate.convertAndSend(exchange, routeKey, JsonObjectMapper.writeValueAsString(message));
             long end = new Date().getTime();
             indicator.getExtend().put("spendTime", (long) (end - start));
-            JsonObjectMapper<Indicator> indicatorJsonObjectMapper = new JsonObjectMapper<>();
-            logger.info(indicatorJsonObjectMapper.writeValueAsString(indicator));
+            logger.info(JsonObjectMapper.writeValueAsString(indicator));
         } catch (Exception e) {
             indicator.setError(e.getMessage());
             indicator.setStatus(Indicator.FAIL);
             indicator.setType(Indicator.RABBIT_TEMPLATE);
-            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<>();
             try {
-                logger.error(jsonObjectMapper.writeValueAsString(indicator), e);
+                logger.error(JsonObjectMapper.writeValueAsString(indicator), e);
             } catch (IOException e1) {
                 e1.printStackTrace();
                 logger.error("实体转化为json字符串异常!", e1);
@@ -77,18 +74,15 @@ public class JRabbitTemplate {
         indicator.setType(Indicator.RABBIT_TEMPLATE);
         try {
             long start = new Date().getTime();
-            JsonObjectMapper<Message> jsonObjectMapper = new JsonObjectMapper<>();
-            amqpTemplate.convertAndSend(exchange, routeKey, jsonObjectMapper.writeValueAsString(message));
+            amqpTemplate.convertAndSend(exchange, routeKey, JsonObjectMapper.writeValueAsString(message));
             long end = new Date().getTime();
             indicator.getExtend().put("spendTime", (long) (end - start));
-            JsonObjectMapper<Indicator> indicatorJsonObjectMapper = new JsonObjectMapper<>();
-            logger.info(indicatorJsonObjectMapper.writeValueAsString(indicator));
+            logger.info(JsonObjectMapper.writeValueAsString(indicator));
         } catch (Exception e) {
             indicator.setError(e.getMessage());
             indicator.setStatus(Indicator.FAIL);
-            JsonObjectMapper<Indicator> indicatorJsonObjectMapper = new JsonObjectMapper<>();
             try {
-                logger.error(indicatorJsonObjectMapper.writeValueAsString(indicator), e);
+                logger.error(JsonObjectMapper.writeValueAsString(indicator), e);
             } catch (IOException e1) {
                 e1.printStackTrace();
                 logger.error("实体转化为json字符串异常!", e1);

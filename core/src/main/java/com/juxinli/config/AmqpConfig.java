@@ -118,8 +118,7 @@ public class AmqpConfig {
                         byte[] body = message.getBody();
                         Message msg = null;
                         try {
-                            JsonObjectMapper<Message> jsonObjectMapper = new JsonObjectMapper<Message>();
-                            msg = (Message) jsonObjectMapper.readerValueAsObject(new String(body, "utf-8"), Message.class);
+                            msg = (Message) JsonObjectMapper.readerValueAsObject(new String(body, "utf-8"), Message.class);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -143,16 +142,14 @@ public class AmqpConfig {
                             indicator.getExtend().put("spendTime", (end - start));
                             indicator.setType(Indicator.RABBIT_TEMPLATE);
                             indicator.setDepth(indicator.getDepth() + 1);
-                            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<Indicator>();
-                            logger.info(jsonObjectMapper.writeValueAsString(indicator));
+                            logger.info(JsonObjectMapper.writeValueAsString(indicator));
                         } catch (Exception e) {
                             Indicator indicator = new Indicator(traceCode);
                             indicator.setStatus(Indicator.FAIL);
                             indicator.setType(Indicator.RABBIT_TEMPLATE);
                             e.printStackTrace();
                             indicator.setError(e.getMessage());
-                            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<Indicator>();
-                            logger.error(jsonObjectMapper.writeValueAsString(indicator), e);
+                            logger.error(JsonObjectMapper.writeValueAsString(indicator), e);
                         }
 
                     }

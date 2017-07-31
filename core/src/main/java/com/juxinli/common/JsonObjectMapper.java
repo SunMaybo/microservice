@@ -20,24 +20,18 @@ import java.util.Set;
  * Json与java实体见转换，包括JSR-303数据校验
  * Created by maybo on 17/7/27.
  */
-public class JsonObjectMapper<T> {
-
+public class JsonObjectMapper {
+    
     private static final Logger LOGGER = Logger.getLogger(JsonObjectMapper.class);
-
+    
     private static ObjectMapper objectMapper = null;
-
-    private static Validator validator;
-
-    static {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
-
+    
+    
     public JsonObjectMapper() {
     }
-
-
-    public T readerValueAsObject(String jsonString, Class clazz) {
+    
+    
+    public static <T> T readerValueAsObject(String jsonString, Class clazz) {
         try {
             if (null == jsonString) {
                 return null;
@@ -53,13 +47,14 @@ public class JsonObjectMapper<T> {
         }
         return null;
     }
-    public String writeValueAsString(T t) throws IOException {
-
+    
+    public static <T> String writeValueAsString(T t) throws IOException {
+        
         return JsonObjectMapper.getDefaultObjectMapper().writeValueAsString(t);
-
+        
     }
-
-    public ValidObject<T> readerValueAsValidObject(String jsonString, Class clazz) {
+    
+    public static <T> ValidObject<T> readerValueAsValidObject(String jsonString, Class clazz) {
         if (null == jsonString) {
             return null;
         } else {
@@ -71,20 +66,8 @@ public class JsonObjectMapper<T> {
         ValidObject<T> validObject = new ValidObject<T>();
         try {
             T t = (T) JsonObjectMapper.getDefaultObjectMapper().readValue(jsonString, clazz);
-            Set<ConstraintViolation<T>> violations = validator.validate(t);
-            if (violations.size() <= 0) {
-                validObject.setIsSuccess(true);
-                validObject.setData(t);
-            } else {
-                StringBuffer buf = new StringBuffer();
-                for (ConstraintViolation<T> violation : violations) {
-                    buf.append(violation.getMessage() + ",");
-                }
-                buf.deleteCharAt(buf.length() - 1);
-                validObject.setIsSuccess(false);
-                validObject.setMessage(buf.toString());
-            }
-            return validObject;
+            
+            return ValidObject.validObject(t);
         } catch (IOException e) {
             e.printStackTrace();
             validObject.setIsSuccess(false);
@@ -92,11 +75,11 @@ public class JsonObjectMapper<T> {
             validObject.setMessage(e.getMessage());
             return validObject;
         }
-
+        
     }
-
+    
     private static synchronized ObjectMapper getDefaultObjectMapper() {
-
+        
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
             //设置将对象转换成JSON字符串时候:包含的属性不能为空或"";
@@ -117,10 +100,10 @@ public class JsonObjectMapper<T> {
             return objectMapper;
         }
     }
-
+    
     public static void main(String[] args) {
-
-
+    
+    
     }
-
+    
 }

@@ -53,8 +53,7 @@ public class MonitorMvcInterceptor extends WebMvcConfigurerAdapter implements Ha
         indicator.getExtend().put("remoteUser", request.getRemoteUser());
         indicator.getExtend().put("protocol", request.getProtocol());
         indicator.setType(Indicator.HTTP_MVC_PRE);
-        JsonObjectMapper<Indicator>jsonObjectMapper=new JsonObjectMapper<>();
-        logger.info(jsonObjectMapper.writeValueAsString(indicator));
+        logger.info(JsonObjectMapper.writeValueAsString(indicator));
         request.setAttribute("traceCode",indicator.traceCode());
         return true;
     }
