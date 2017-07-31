@@ -16,8 +16,6 @@ public @interface JRabbitListener {
 
     public static final String FANOUT_EXCHANGE="fanout";
 
-    public static final String RANDOM_CODE= UUIDUtil.getRandomString();
-
     boolean isAutoCreateQueue() default false;
 
     String exchangeType() default "topic";

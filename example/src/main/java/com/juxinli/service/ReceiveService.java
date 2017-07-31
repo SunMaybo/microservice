@@ -16,7 +16,6 @@ public class ReceiveService implements ReceiveMessageListener {
     @Override
     public void process(Message message) {
         logger.info("---------------这是一条全局广播接受的消息-------------");
-        logger.info("绑定的队列名字:"+ JRabbitListener.RANDOM_CODE);
         logger.info(message.toString());
     }
 }

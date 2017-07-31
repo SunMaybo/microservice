@@ -18,6 +18,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,9 +28,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ *
  * Created by maybo on 17/6/23.
  */
 @Configuration
+@ConditionalOnProperty("spring.rabbitmq.enable")
 public class AmqpConfig {
     @Value("${spring.rabbitmq.addresses}")
     private String addresses;
@@ -71,25 +74,25 @@ public class AmqpConfig {
 
 
     @Bean
-    public JRabbitTemplate jRabbitTemplate(@Qualifier("rabbitTemplate") RabbitTemplate rabbitTemplate, @Qualifier("bindingProperties") BindingProperties bindingProperties, @Qualifier("connectionFactory") ConnectionFactory connectionFactory) {
-        binding(bindingProperties, connectionFactory);
-        messageContainer(connectionFactory);
+    public JRabbitTemplate jRabbitTemplate(@Qualifier("rabbitTemplate") RabbitTemplate rabbitTemplate, @Qualifier("bindingProperties") BindingProperties bindingProperties, @Qualifier("connectionFactory") ConnectionFactory connectionFactory, UniqueRandomCodeComponet uniqueRandomCodeComponet) {
+        binding(bindingProperties, connectionFactory, uniqueRandomCodeComponet);
+        messageContainer(connectionFactory, uniqueRandomCodeComponet);
         return new JRabbitTemplate(rabbitTemplate);
     }
 
-    public void messageContainer(ConnectionFactory connectionFactory) {
-       final List<Object> objectList = springBeanDefinitionRegistry.getBeansOfAnnotation(JRabbitListener.class);
+    public void messageContainer(ConnectionFactory connectionFactory, UniqueRandomCodeComponet uniqueRandomCodeComponet) {
+        final List<Object> objectList = springBeanDefinitionRegistry.getBeansOfAnnotation(JRabbitListener.class);
         for (int i = 0; i < objectList.size(); i++) {
             JRabbitListener jRabbitListener = objectList.get(i).getClass().getAnnotation(JRabbitListener.class);
             String[] queueNames = jRabbitListener.queues();
-            if (jRabbitListener.isAutoCreateQueue()){//随机队列
-              if (null!=queueNames){
-                  queueNames= Arrays.copyOf(queueNames, queueNames.length + 1);
-                  queueNames[queueNames.length-1]=JRabbitListener.RANDOM_CODE;
-              }else {
-                  queueNames=new String[1];
-                  queueNames[0]= UUIDUtil.getOrderIdByUUId();
-              }
+            if (jRabbitListener.isAutoCreateQueue()) {//随机队列
+                if (null != queueNames) {
+                    queueNames = Arrays.copyOf(queueNames, queueNames.length + 1);
+                    queueNames[queueNames.length - 1] = uniqueRandomCodeComponet.getRandomCode();
+                } else {
+                    queueNames = new String[1];
+                    queueNames[0] = UUIDUtil.getOrderIdByUUId();
+                }
             }
             if (null != queueNames) {
                 Queue[] queues = new Queue[queueNames.length];
@@ -115,7 +118,8 @@ public class AmqpConfig {
                         byte[] body = message.getBody();
                         Message msg = null;
                         try {
-                            msg = (Message) JsonObjectMapper.readerValueAsObject(new String(body, "utf-8"), Message.class);
+                            JsonObjectMapper<Message> jsonObjectMapper = new JsonObjectMapper<Message>();
+                            msg = (Message) jsonObjectMapper.readerValueAsObject(new String(body, "utf-8"), Message.class);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -138,15 +142,17 @@ public class AmqpConfig {
                             long end = new Date().getTime();
                             indicator.getExtend().put("spendTime", (end - start));
                             indicator.setType(Indicator.RABBIT_TEMPLATE);
-                            indicator.setDepth(indicator.getDepth()+1);
-                            logger.info(JsonObjectMapper.writeValueAsString(indicator));
+                            indicator.setDepth(indicator.getDepth() + 1);
+                            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<Indicator>();
+                            logger.info(jsonObjectMapper.writeValueAsString(indicator));
                         } catch (Exception e) {
                             Indicator indicator = new Indicator(traceCode);
                             indicator.setStatus(Indicator.FAIL);
                             indicator.setType(Indicator.RABBIT_TEMPLATE);
                             e.printStackTrace();
                             indicator.setError(e.getMessage());
-                            logger.error(JsonObjectMapper.writeValueAsString(indicator), e);
+                            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<Indicator>();
+                            logger.error(jsonObjectMapper.writeValueAsString(indicator), e);
                         }
 
                     }
@@ -157,8 +163,8 @@ public class AmqpConfig {
 
     }
 
-    private void binding(BindingProperties bindingProperties, ConnectionFactory connectionFactory) {
-        new Binding(bindingProperties, connectionFactory, springBeanDefinitionRegistry);
+    private void binding(BindingProperties bindingProperties, ConnectionFactory connectionFactory, UniqueRandomCodeComponet uniqueRandomCodeComponet) {
+        new Binding(bindingProperties, connectionFactory, springBeanDefinitionRegistry, uniqueRandomCodeComponet);
 
     }
 

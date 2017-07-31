@@ -42,18 +42,19 @@ public class MonitorMvcInterceptor extends WebMvcConfigurerAdapter implements Ha
         }else {
              indicator=new Indicator(traceId);
         }
-        indicator.setDepth(indicator.getDepth()+1);
+        indicator.setDepth(indicator.getDepth() + 1);
         String name =environment.getProperty("spring.application.name");
         indicator.setTime(new Date().getTime());
         indicator.getExtend().put("url", request.getRequestURI());
         indicator.setName(name);
-        indicator.getExtend().put("remoteHost",request.getRemoteHost());
+        indicator.getExtend().put("remoteHost", request.getRemoteHost());
         indicator.getExtend().put("remoteAddr",request.getRemoteAddr());
         indicator.getExtend().put("contextPath",request.getContextPath());
         indicator.getExtend().put("remoteUser", request.getRemoteUser());
         indicator.getExtend().put("protocol", request.getProtocol());
         indicator.setType(Indicator.HTTP_MVC_PRE);
-        logger.info(JsonObjectMapper.writeValueAsString(indicator));
+        JsonObjectMapper<Indicator>jsonObjectMapper=new JsonObjectMapper<>();
+        logger.info(jsonObjectMapper.writeValueAsString(indicator));
         request.setAttribute("traceCode",indicator.traceCode());
         return true;
     }

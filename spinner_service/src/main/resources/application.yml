@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: spinner
+
+server:
+   port: 8958
+   context-path: /spinner_service

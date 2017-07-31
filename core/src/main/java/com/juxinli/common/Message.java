@@ -1,11 +1,13 @@
 package com.juxinli.common;
 
+import javax.validation.constraints.Min;
 import java.util.Date;
 
 /**
  * Created by maybo on 17/6/23.
  */
 public class Message {
+
 
     public int status=200;
     public String type;

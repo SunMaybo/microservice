@@ -5,12 +5,14 @@ package com.juxinli.common;
  */public interface   Error {
 
 
-    String getCodeDescription();
+    String getDescription();
 
-    int getCode();
 
-    void setCode(int code);
+    int getStatus();
 
-    void setCodeDescription(String codeDescription);
+    void setStatus(int status);
+
+
+    void setDescription(String description);
 
 }

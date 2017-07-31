@@ -9,15 +9,16 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
 /**
- *
  * Created by maybo on 17/6/20.
  */
-@Component@ConditionalOnProperty("loadBalanced.enabled")
-public class JRestTemplate  {
+@Component
+@ConditionalOnProperty("loadBalanced.enabled")
+public class JRestTemplate {
 
     private Logger logger = Logger.getLogger(this.getClass());
 
@@ -26,80 +27,79 @@ public class JRestTemplate  {
     private RestTemplate restTemplate;
 
 
+    public <T> T postForObject(String url, Object request, Class<T> responseType, Object... uriVariables) {
 
-    public <T> T postForObject(String url, Object request, Class<T> responseType, Object... uriVariables)  {
-
-      return postForObject(url,request,responseType,null,uriVariables);
-
-    }
-
-
-    public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Class<T> responseType, Object... uriVariables)  {
-
-
-        return  exchange(url,method,requestEntity,responseType,null,uriVariables);
-
+        return postForObject(url, request, responseType, null, uriVariables);
 
     }
 
 
-    public <T> T postForObject(String url, Object request, Class<T> responseType, Indicator indicator, Object... uriVariables)  {
+    public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Class<T> responseType, Object... uriVariables) {
 
-        if (null==indicator){
-            indicator =new Indicator();
+
+        return exchange(url, method, requestEntity, responseType, null, uriVariables);
+
+
+    }
+
+
+    public <T> T postForObject(String url, Object request, Class<T> responseType, Indicator indicator, Object... uriVariables) {
+
+        if (null == indicator) {
+            indicator = new Indicator();
         }
         HttpHeaders headers = new HttpHeaders();
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
         headers.setContentType(type);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        headers.add("traceCode",indicator.traceCode());
-        HttpEntity<?> stringHttpEntity =new HttpEntity<>(request,headers);
-        ResponseEntity<T> responseEntity= exchange(url,HttpMethod.POST,stringHttpEntity,responseType,indicator,uriVariables);
-        return (T)responseEntity.getBody();
+        headers.add("traceCode", indicator.traceCode());
+        HttpEntity<?> stringHttpEntity = new HttpEntity<>(request, headers);
+        ResponseEntity<T> responseEntity = exchange(url, HttpMethod.POST, stringHttpEntity, responseType, indicator, uriVariables);
+        return (T) responseEntity.getBody();
 
     }
 
-    public <T> T getForObject(String url,Class<T> responseType, Object... uriVariables){
+    public <T> T getForObject(String url, Class<T> responseType, Object... uriVariables) {
         return getForObject(url, responseType, null, uriVariables);
     }
 
-    public <T> T getForObject(String url,Class<T> responseType, Indicator indicator ,Object... uriVariables){
-        if (null==indicator){
-            indicator =new Indicator();
+    public <T> T getForObject(String url, Class<T> responseType, Indicator indicator, Object... uriVariables) {
+        if (null == indicator) {
+            indicator = new Indicator();
         }
 
         HttpHeaders headers = new HttpHeaders();
-                 MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-                 headers.setContentType(type);
-                 headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-                 headers.add("traceCode",indicator.traceCode());
-        HttpEntity<?> stringHttpEntity =new HttpEntity<>(headers);
-        ResponseEntity<T> responseEntity= exchange(url,HttpMethod.GET,stringHttpEntity,responseType,indicator,uriVariables);
-        return (T)responseEntity.getBody();
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        headers.add("traceCode", indicator.traceCode());
+        HttpEntity<?> stringHttpEntity = new HttpEntity<>(headers);
+        ResponseEntity<T> responseEntity = exchange(url, HttpMethod.GET, stringHttpEntity, responseType, indicator, uriVariables);
+        return (T) responseEntity.getBody();
 
     }
 
-    public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Class<T> responseType, Indicator indicator, Object... uriVariables)  {
+    public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity, Class<T> responseType, Indicator indicator, Object... uriVariables) {
 
 
-        ResponseEntity<T> t= null;
+        ResponseEntity<T> t = null;
 
-        if (null==indicator){
-            indicator =new Indicator();
+        if (null == indicator) {
+            indicator = new Indicator();
         }
 
-        Map<String,Object> dataMap = indicator.getExtend();
+        Map<String, Object> dataMap = indicator.getExtend();
 
-        dataMap.put("url",url);
-        dataMap.put("httpMethod",method.name());
+        dataMap.put("url", url);
+        dataMap.put("httpMethod", method.name());
 
         try {
 
             Date start = new Date();
 
-            t  = restTemplate.exchange(url, method, requestEntity, responseType, uriVariables);
+            t = restTemplate.exchange(url, method, requestEntity, responseType, uriVariables);
 
-            Date end =new Date();
+            Date end = new Date();
 
             dataMap.put("spendTime", (long) (end.getTime() - start.getTime()));
 
@@ -108,16 +108,22 @@ public class JRestTemplate  {
             int status = t.getStatusCodeValue();
 
             indicator.setStatus(status);
+            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<>();
 
-            logger.info(JsonObjectMapper.writeValueAsString(indicator));
+            logger.info(jsonObjectMapper.writeValueAsString(indicator));
 
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             indicator.setType(Indicator.REST_TEMPLATE_TYPE);
             indicator.setError(e.getMessage());
             indicator.setStatus(Indicator.FAIL);
-            logger.error(JsonObjectMapper.writeValueAsString(indicator),e);
+            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<>();
+            try {
+                logger.error(jsonObjectMapper.writeValueAsString(indicator), e);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
 
         return t;

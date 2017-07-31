@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: oauth
+  redis:
+        hostName: 192.168.100.233
+        port: 6379
+        password: mypass
+        pool:
+             maxActive: 8
+             maxWait: -1
+             maxIdle: 8
+             minIdle: 0
+             timeout: 0
+
+server:
+   port: 8956
+   context-path: /jxl_oauth
+facebook:
+      callback: https://its.juxinli.com/ITS_statistic/code
+      client_id: 1811765862486276
+      client_secret: a5ad0611cb02831eece198fb830a8fc3
+twitter:
+     oauth1.0a:
+          callback: https://its.juxinli.com/ITS_statistic/queryString
+          oauth:
+             consumer:
+                    key: jOYDznWpH3uP4vhm8VIei8Ny8
+                    secret: atl8I7LNaQcikxVPKot53qASztKqrUmQqOwhnhPWixlSfbasLj
+

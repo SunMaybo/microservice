@@ -6,6 +6,7 @@ import com.juxinli.common.Indicator;
 import org.apache.log4j.Logger;
 import org.springframework.amqp.core.*;
 
+import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -18,62 +19,80 @@ public class JRabbitTemplate {
 
     private AmqpTemplate amqpTemplate;
 
-    public JRabbitTemplate(AmqpTemplate amqpTemplate){
-        this.amqpTemplate=amqpTemplate;
+    public JRabbitTemplate(AmqpTemplate amqpTemplate) {
+        this.amqpTemplate = amqpTemplate;
     }
-    public void convertAndSend(String exchange, String routeKey, com.juxinli.common.Message message)  {
-        if (exchange==null){
-            throw  new NullPointerException("交换机不可以为空!");
+
+    public void convertAndSend(String exchange, String routeKey, com.juxinli.common.Message message) {
+        if (exchange == null) {
+            throw new NullPointerException("交换机不可以为空!");
         }
-        Indicator indicator=null;
-        if (null==message){
+        Indicator indicator = null;
+        if (null == message) {
             logger.warn("发送的消息为空!");
-            indicator=new Indicator();
-            message=new Message();
+            indicator = new Indicator();
+            message = new Message();
             message.setTraceCode(indicator.traceCode());
         }
-        if (message.getTraceCode()==null){
-            indicator =new Indicator();
+        if (message.getTraceCode() == null) {
+            indicator = new Indicator();
             message.setTraceCode(indicator.traceCode());
-        }else {
+        } else {
             indicator = new Indicator(message.getTraceCode());
         }
         indicator.setType(Indicator.RABBIT_TEMPLATE);
         try {
-             long start=new Date().getTime();
-             amqpTemplate.convertAndSend(exchange, routeKey, JsonObjectMapper.writeValueAsString(message));
-             long end=new Date().getTime();
-             indicator.getExtend().put("spendTime", (long) (end - start));
-             logger.info(JsonObjectMapper.writeValueAsString(indicator));
-        }catch (Exception e){
+            long start = new Date().getTime();
+            JsonObjectMapper<Message> jsonObjectMapper = new JsonObjectMapper<>();
+            amqpTemplate.convertAndSend(exchange, routeKey, jsonObjectMapper.writeValueAsString(message));
+            long end = new Date().getTime();
+            indicator.getExtend().put("spendTime", (long) (end - start));
+            JsonObjectMapper<Indicator> indicatorJsonObjectMapper = new JsonObjectMapper<>();
+            logger.info(indicatorJsonObjectMapper.writeValueAsString(indicator));
+        } catch (Exception e) {
             indicator.setError(e.getMessage());
             indicator.setStatus(Indicator.FAIL);
             indicator.setType(Indicator.RABBIT_TEMPLATE);
-            logger.error(JsonObjectMapper.writeValueAsString(indicator),e);
+            JsonObjectMapper<Indicator> jsonObjectMapper = new JsonObjectMapper<>();
+            try {
+                logger.error(jsonObjectMapper.writeValueAsString(indicator), e);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+                logger.error("实体转化为json字符串异常!", e1);
+            }
         }
 
 
     }
-    public void convertAndSend(String exchange, String routeKey, Message message,Indicator indicator)  {
-        if (exchange==null||indicator==null){
-            throw  new NullPointerException("exchange or indicator传入参数不可以为空!");
+
+    public void convertAndSend(String exchange, String routeKey, Message message, Indicator indicator) {
+        if (exchange == null || indicator == null) {
+            throw new NullPointerException("exchange or indicator传入参数不可以为空!");
         }
-        if (null==message){
+        if (null == message) {
             logger.error("发送的消息为空!");
-            throw  new NullPointerException("发送消息不可以为空!");
+            throw new NullPointerException("发送消息不可以为空!");
         }
-        indicator =new Indicator(message.getTraceCode());
+        indicator = new Indicator(message.getTraceCode());
         indicator.setType(Indicator.RABBIT_TEMPLATE);
         try {
-            long start=new Date().getTime();
-            amqpTemplate.convertAndSend(exchange, routeKey, JsonObjectMapper.writeValueAsString(message));
-            long end=new Date().getTime();
+            long start = new Date().getTime();
+            JsonObjectMapper<Message> jsonObjectMapper = new JsonObjectMapper<>();
+            amqpTemplate.convertAndSend(exchange, routeKey, jsonObjectMapper.writeValueAsString(message));
+            long end = new Date().getTime();
             indicator.getExtend().put("spendTime", (long) (end - start));
-            logger.info(JsonObjectMapper.writeValueAsString(indicator));
-        }catch (Exception e){
+            JsonObjectMapper<Indicator> indicatorJsonObjectMapper = new JsonObjectMapper<>();
+            logger.info(indicatorJsonObjectMapper.writeValueAsString(indicator));
+        } catch (Exception e) {
             indicator.setError(e.getMessage());
             indicator.setStatus(Indicator.FAIL);
-            logger.error(JsonObjectMapper.writeValueAsString(indicator),e);
+            JsonObjectMapper<Indicator> indicatorJsonObjectMapper = new JsonObjectMapper<>();
+            try {
+                logger.error(indicatorJsonObjectMapper.writeValueAsString(indicator), e);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+                logger.error("实体转化为json字符串异常!", e1);
+            }
         }
 
 

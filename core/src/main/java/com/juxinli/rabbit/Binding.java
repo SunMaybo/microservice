@@ -22,11 +22,13 @@ public class Binding {
     private BindingProperties bindingProperties;
     private ConnectionFactory connectionFactory;
     private SpringBeanDefinitionRegistry springBeanDefinitionRegistry;
+    private UniqueRandomCodeComponet uniqueRandomCodeComponet;
 
-    public Binding(BindingProperties bindingProperties, ConnectionFactory connectionFactory,SpringBeanDefinitionRegistry springBeanDefinitionRegistry) {
+    public Binding(BindingProperties bindingProperties, ConnectionFactory connectionFactory,SpringBeanDefinitionRegistry springBeanDefinitionRegistry,UniqueRandomCodeComponet uniqueRandomCodeComponet) {
         this.bindingProperties = bindingProperties;
         this.connectionFactory = connectionFactory;
         this.springBeanDefinitionRegistry=springBeanDefinitionRegistry;
+        this.uniqueRandomCodeComponet=uniqueRandomCodeComponet;
         init();
     }
 
@@ -59,11 +61,11 @@ public class Binding {
         FanoutExchange fanoutExchange = new FanoutExchange(name);
         rabbitAdmin.declareExchange(fanoutExchange);
         if (fanout.isAutoCreateQueue()){
-            Queue queue=new Queue(JRabbitListener.RANDOM_CODE);
-            springBeanDefinitionRegistry.registry(JRabbitListener.RANDOM_CODE,queue);
+            Queue queue=new Queue(uniqueRandomCodeComponet.getRandomCode());
+            springBeanDefinitionRegistry.registry(uniqueRandomCodeComponet.getRandomCode(),queue);
             rabbitAdmin.declareQueue(queue);
             rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(fanoutExchange));
-            logger.info("广播模式绑定消息队列:" + "交换机:" + name + ",队列名字:" + JRabbitListener.RANDOM_CODE);
+            logger.info("广播模式绑定消息队列:" + "交换机:" + name + ",队列名字:" + uniqueRandomCodeComponet.getRandomCode());
         }
         String queues = fanout.getQueues();
         if (null == queues) {
